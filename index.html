@@ -4,28 +4,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI-Generated Emergency Water Supply Planning</title>
+    <title>AI-Generated Water Supply Planner</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary-color: #0056b3;
-            /* Darker blue for professional feel */
-            --secondary-color: #007bff;
-            /* Standard blue */
-            --accent-color: #00bcd4;
-            /* Cyan/Teal for water-related accents */
-            --success-color: #28a745;
-            --danger-color: #dc3545;
-            --bg-color: #f4f7f6;
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #64748b;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-color: #f8fafc;
             --card-bg: #ffffff;
-            --text-color: #333;
-            --text-muted: #6c757d;
-            --border-radius: 8px;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --font-family: 'Inter', sans-serif;
         }
 
         * {
@@ -37,293 +38,339 @@
         body {
             font-family: var(--font-family);
             background-color: var(--bg-color);
-            color: var(--text-color);
+            color: var(--text-main);
             line-height: 1.6;
-            padding-bottom: 60px;
-            /* Space for footer */
+            padding-bottom: 40px;
         }
 
         /* Header */
         header {
-            background: linear-gradient(to right, #ffffff, #e3f2fd);
-            padding: 2rem 1rem;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            padding: 2.5rem 1rem;
             text-align: center;
-            border-bottom: 1px solid #dee2e6;
             margin-bottom: 2rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
         }
 
         header h1 {
-            color: var(--primary-color);
+            font-size: 2.25rem;
+            font-weight: 700;
             margin-bottom: 0.5rem;
-            font-size: 2rem;
+            letter-spacing: -0.025em;
         }
 
         header p {
-            color: var(--text-muted);
+            color: #94a3b8;
             font-size: 1.1rem;
-            max-width: 800px;
+            max-width: 600px;
             margin: 0 auto;
         }
 
-        /* Container */
+        /* Container & Grid */
         .container {
-            max-width: 1200px;
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 0 1rem;
-            display: grid;
+            padding: 0 1.5rem;
+            display: flex;
+            flex-direction: column;
             gap: 2rem;
         }
 
-        /* Cards */
+        /* Card Styles */
         .card {
             background: var(--card-bg);
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
             padding: 1.5rem;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
         }
 
         .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
         }
 
         .card-header {
-            border-bottom: 1px solid #eee;
-            padding-bottom: 1rem;
-            margin-bottom: 1rem;
-            font-weight: 600;
-            font-size: 1.25rem;
-            color: var(--primary-color);
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #f1f5f9;
         }
 
-        /* Form */
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Form Controls */
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 1.5rem;
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
+            gap: 0.5rem;
         }
 
         label {
-            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
             font-weight: 500;
-            color: #555;
+            color: var(--text-muted);
         }
 
         input,
         select {
             padding: 0.75rem;
-            border: 1px solid #ced4da;
-            border-radius: var(--border-radius);
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
             font-size: 1rem;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         input:focus,
         select:focus {
             outline: none;
-            border-color: var(--secondary-color);
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            gap: 0.5rem;
         }
 
         .btn-primary {
-            background-color: var(--primary-color);
+            background-color: var(--primary);
             color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--border-radius);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
             width: 100%;
-            /* Full width on mobile, adjust via grid */
             margin-top: 1.5rem;
-            transition: background-color 0.2s;
+            font-size: 1.1rem;
         }
 
         .btn-primary:hover {
-            background-color: #004494;
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
         }
 
-        /* Dashboard Stats */
+        /* Stats Dashboard */
         .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
+            display: flex !important;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .stat-card {
+            flex: 1 1 180px;
+            /* Grow to fill, shrink if needed, base 180px */
+            min-width: 160px;
+            /* Allow shrinking a bit more */
+            /* No max-width */
         }
 
         .stat-card {
             background: #fff;
             padding: 1.5rem;
             border-radius: var(--border-radius);
-            text-align: center;
-            border-left: 5px solid var(--secondary-color);
             box-shadow: var(--shadow);
+            border-left: 4px solid var(--secondary);
         }
 
-        .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--text-color);
-            margin: 0.5rem 0;
+        .stat-card.success {
+            border-left-color: var(--success);
+        }
+
+        .stat-card.danger {
+            border-left-color: var(--danger);
         }
 
         .stat-label {
+            font-size: 0.875rem;
             color: var(--text-muted);
-            font-size: 0.9rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
         }
 
-        .stat-card.good {
-            border-left-color: var(--success-color);
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-main);
         }
 
-        .stat-card.bad {
-            border-left-color: var(--danger-color);
-        }
-
-        /* Tables & Lists */
-        .results-section {
+        /* Layout for Map & AI */
+        .split-view {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 2fr 1fr;
             gap: 2rem;
         }
 
-        @media (max-width: 768px) {
-            .results-section {
+        @media (max-width: 1024px) {
+            .split-view {
                 grid-template-columns: 1fr;
             }
+        }
+
+        /* Map */
+        #map {
+            height: 600px;
+            width: 100%;
+            border-radius: var(--border-radius);
+            z-index: 1;
+        }
+
+        /* AI Analysis Panel */
+        .ai-panel {
+            background: linear-gradient(to bottom, #f8fafc, #fff);
+            font-size: 0.95rem;
+            height: 600px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+        }
+
+        .ai-content {
+            white-space: pre-wrap;
+            line-height: 1.7;
+            color: #334155;
+        }
+
+        .ai-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            font-style: italic;
+            gap: 0.5rem;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Table Styles */
+        .table-responsive {
+            overflow-x: auto;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         th,
         td {
-            padding: 0.75rem;
             text-align: left;
-            border-bottom: 1px solid #eee;
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
         }
 
         th {
-            background-color: #f8f9fa;
-            color: var(--text-muted);
+            background-color: #f8fafc;
             font-weight: 600;
+            color: var(--text-muted);
         }
 
-        /* Visual Map - UPDATED FOR LEAFLET */
-        #map {
-            height: 500px;
-            width: 100%;
-            border-radius: var(--border-radius);
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Legend */
+        .legend {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem;
+            line-height: 1.5;
+            color: #333;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            font-size: 13px;
+        }
+
+        .legend i {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            vertical-align: middle;
         }
 
         /* Footer */
         footer {
             text-align: center;
-            padding: 2rem;
-            color: var(--text-muted);
-            border-top: 1px solid #dee2e6;
             margin-top: 3rem;
-            background-color: #fff;
+            color: var(--text-muted);
+            font-size: 0.9rem;
         }
 
-        /* Status Colors */
-        .text-success {
-            color: var(--success-color);
-        }
-
-        .text-danger {
-            color: var(--danger-color);
-        }
-
-        /* Custom Marker Icons */
-        .emoji-marker {
-            font-size: 24px;
+        .badge {
+            display: inline-block;
+            padding: 0.25em 0.6em;
+            font-size: 75%;
+            font-weight: 700;
+            line-height: 1;
             text-align: center;
-            line-height: 24px;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.375rem;
+            color: #fff;
         }
 
-        .emoji-marker-tanker {
-            text-shadow: 0 0 3px #fff;
+        .badge-success {
+            background-color: var(--success);
         }
 
-        .emoji-marker-storage {
-            text-shadow: 0 0 3px #fff;
+        .badge-warning {
+            background-color: var(--warning);
         }
 
-        /* Map Legend */
-        .legend {
-            background: white;
-            padding: 10px;
-            line-height: 18px;
-            color: #555;
-            border-radius: 5px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-            font-size: 14px;
-        }
-
-        .legend i {
-            width: 18px;
-            height: 18px;
-            float: left;
-            margin-right: 8px;
-            opacity: 0.7;
-            text-align: center;
-            font-style: normal;
-        }
-
-        /* Guide Section */
-        .guide-section {
-            background-color: #e9ecef;
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            border-left: 5px solid var(--accent-color);
-        }
-
-        .guide-section h3 {
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-        }
-
-        .guide-section p,
-        .guide-section li {
-            color: #495057;
-            font-size: 0.95rem;
-            line-height: 1.5;
-        }
-
-        .guide-section ul {
-            margin-left: 1.5rem;
-            margin-top: 0.5rem;
+        .badge-danger {
+            background-color: var(--danger);
         }
     </style>
-
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <!-- Leaflet Polyline Decorator -->
-    <script src="https://unpkg.com/leaflet-polyline-decorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
     <!-- Leaflet Routing Machine -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
     <style>
-        /* Hide Routing Control Panel */
         .leaflet-routing-container {
             display: none !important;
         }
@@ -333,34 +380,16 @@
 <body>
 
     <header>
-        <h1>AI-Driven Emergency Water Supply Simulator</h1>
-        <p>Simulation-based generative planning model for emergency water distribution during drought and contamination
-            events.</p>
+        <h1>AI Water Supply Planner</h1>
+        <p>Advanced simulation & AI-driven analysis for emergency water distribution.</p>
     </header>
 
     <div class="container">
 
-        <!-- NEW: "EASY TERMS" GUIDE SECTION -->
-        <section class="guide-section">
-            <h3>📖 How to Use This Tool (Simple Guide)</h3>
-            <p>This tool helps plan water delivery during emergencies. Here is how it works:</p>
-            <ul>
-                <li><strong>Step 1:</strong> Enter the <b>Population</b> (number of people affected).</li>
-                <li><strong>Step 2:</strong> Set <b>LPCD</b> (Liters Per Person Per Day) - amount of water one person
-                    needs.</li>
-                <li><strong>Step 3:</strong> Enter available <b>Tankers</b> (Water Trucks) and <b>Borewells</b> (Wells).
-                </li>
-                <li><strong>Step 4:</strong> Click <b>"Generate AI Emergency Plan"</b>.</li>
-            </ul>
-            <p style="margin-top: 10px;">The results will show if there is a water shortage (<b>Gap</b>), the
-                <b>Coverage</b> %, and a <b>Map</b> showing where trucks (🚛) and tanks (🛢️) should go.
-            </p>
-        </section>
-
-        <!-- SECTION 1: SCENARIO INPUT -->
+        <!-- CONFIGURATION CARD -->
         <section class="card">
             <div class="card-header">
-                <span>⚙️ Scenario Configuration</span>
+                <div class="card-title">⚙️ Simulation Parameters</div>
             </div>
             <div class="form-grid">
                 <div class="form-group">
@@ -368,395 +397,597 @@
                     <select id="scenarioType">
                         <option value="drought">Severe Drought</option>
                         <option value="contamination">Water Contamination</option>
-                        <option value="pipeline">Pipeline Failure</option>
+                        <option value="pipeline">Pipeline Infrastructure Failure</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="population">Affected Population</label>
-                    <input type="number" id="population" value="80000" min="1000">
+                    <label for="population" title="Total number of people affected in the region">Population</label>
+                    <input type="number" id="population" value="85000" min="1000">
                 </div>
                 <div class="form-group">
-                    <label for="lpcd">Emergency LPCD (Liters/Person/Day)</label>
-                    <input type="number" id="lpcd" value="50" min="10">
+                    <label for="lpcd" title="Liters Per Capita per Day (Emergency Target)">Target LPCD (Liters)</label>
+                    <input type="number" id="lpcd" value="40" min="10">
                 </div>
                 <div class="form-group">
-                    <label for="tankers">Total Tankers Available</label>
-                    <input type="number" id="tankers" value="10" min="1">
+                    <label for="tankers">Available Tankers</label>
+                    <input type="number" id="tankers" value="12" min="1">
                 </div>
                 <div class="form-group">
                     <label for="capacity">Tanker Capacity (L)</label>
-                    <input type="number" id="capacity" value="10000" min="1000">
+                    <input type="number" id="capacity" value="12000" min="1000">
                 </div>
                 <div class="form-group">
-                    <label for="borewells">Number of Borewells</label>
-                    <input type="number" id="borewells" value="5" min="0">
+                    <label for="borewells">Active Borewells</label>
+                    <input type="number" id="borewells" value="6" min="0">
                 </div>
             </div>
-            <button class="btn-primary" onclick="generatePlan()">Generate AI Emergency Plan</button>
+            <button class="btn btn-primary" id="generateBtn">
+                <span>🚀 Run Simulation & AI Analysis</span>
+            </button>
         </section>
 
-        <!-- SECTION 3: OUTPUT DASHBOARD -->
+        <!-- DASHBOARD STATS -->
         <section class="stats-grid" id="statsSection" style="display: none;">
             <div class="stat-card">
-                <div class="stat-label">Total Demand</div>
+                <div class="stat-label">Total Water Demand</div>
                 <div class="stat-value" id="dispDemand">0 L</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Total Supply</div>
+                <div class="stat-label">Total Supply Capacity</div>
                 <div class="stat-value" id="dispSupply">0 L</div>
             </div>
             <div class="stat-card" id="cardGap">
-                <div class="stat-label">Demand Gap</div>
+                <div class="stat-label">Water Deficit (Gap)</div>
                 <div class="stat-value" id="dispGap">0 L</div>
             </div>
             <div class="stat-card" id="cardCoverage">
-                <div class="stat-label">Coverage</div>
+                <div class="stat-label">Coverage Ratio</div>
                 <div class="stat-value" id="dispCoverage">0%</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Required Storage Tanks</div>
-                <div class="stat-value" id="dispStorage">0</div>
+                <div class="stat-label">Borewell Contribution</div>
+                <div class="stat-value" id="dispBorewell">0 L</div>
             </div>
         </section>
 
-        <!-- SECTION 2/4: SIMULATION LOGIC OUTPUTS -->
-        <div class="results-section" id="detailsSection" style="display: none;">
-            <!-- Borewell Priority -->
-            <section class="card">
-                <div class="card-header">
-                    <span>💧 Borewell Yield & Priority</span>
-                    <button class="btn-primary"
-                        style="margin-left:auto; width:auto; margin-top:0; padding: 0.5rem 1rem; font-size: 0.9rem;"
-                        onclick="generatePlan()">Re-Run</button>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Borewell ID</th>
-                            <th>Yield (L)</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="borewellTable">
-                        <!-- Rows injected by JS -->
-                    </tbody>
-                </table>
+        <!-- SPLIT VIEW: MAP & AI -->
+        <div class="split-view" id="mainResults" style="display: none;">
+
+            <!-- LEFT: MAP -->
+            <section class="card" style="padding: 0; overflow: hidden;">
+                <div id="map"></div>
             </section>
 
-            <!-- Tanker Routes -->
-            <section class="card">
-                <div class="card-header">
-                    <span>🚛 Optimized Tanker Routes</span>
+            <!-- RIGHT: AI ANALYSIS -->
+            <section class="card ai-panel">
+                <div class="card-header" style="position: sticky; top: 0; background: #fff; z-index: 10;">
+                    <div class="card-title">🤖 AI Strategic Insights</div>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Zone</th>
-                            <th>Tankers Assigned</th>
-                            <th>Supply (L)</th>
-                            <th>Est. Delivery</th>
-                        </tr>
-                    </thead>
-                    <tbody id="routeTable">
-                        <!-- Rows injected by JS -->
-                    </tbody>
-                </table>
+                <div id="aiOutput" class="ai-content" style="padding: 1rem;">
+                    <div class="ai-loading">Waiting for simulation data...</div>
+                </div>
             </section>
         </div>
 
-        <!-- SECTION 4: VISUAL MAP -->
-        <section class="card" id="mapSection" style="display: none;">
+        <!-- DETAILS TABLES -->
+        <section class="card" id="detailsSection" style="display: none;">
             <div class="card-header">
-                <span>🗺️ Visual Distribution Map (OpenStreetMap)</span>
+                <div class="card-title">📋 Detailed Logistics</div>
             </div>
-            <!-- Leaflet Map Container -->
-            <div id="map"></div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Zone ID</th>
+                            <th>Status</th>
+                            <th>Population</th>
+                            <th>Demand (L)</th>
+                            <th>Allocated Tankers</th>
+                            <th>Supplied (L)</th>
+                            <th>Deficit (L)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="zoneTable">
+                        <!-- JS populated -->
+                    </tbody>
+                </table>
+            </div>
         </section>
 
     </div>
 
-    <!-- SECTION 5: FOOTER -->
     <footer>
-        <p>Based on CPHEEO Manual, IS 1172 and IS 10500 Guidelines.</p>
-        <p>Educational Simulation Model Example.</p>
+        <p>Built with Leaflet.js, OSRM, and Groq AI Model Llama 3.</p>
     </footer>
 
-    <!-- SECTION 2: SIMULATION LOGIC (JavaScript) -->
+    <!-- CONFIGURATION -->
+    <script src="config.js"></script>
+
+    <!-- LOGIC SCRIPT -->
     <script>
-        let map;
-        let markersGroup;
+        /**
+         * APPLICATION CONFIGURATION
+         * Loaded from config.js
+         */
 
-        // Base coordinates (e.g., Generic City Center)
-        const BASE_LAT = 12.9716;
-        const BASE_LNG = 77.5946;
+        /**
+         * STATE MANAGEMENT
+         */
+        const State = {
+            population: 0,
+            lpcd: 0,
+            tankers: 0,
+            capacity: 0,
+            borewells: 0,
+            zones: [],
+            stats: {},
 
-        function initMap() {
-            if (map) return;
+            updateFromDOM() {
+                this.population = parseInt(document.getElementById('population').value) || 0;
+                this.lpcd = parseInt(document.getElementById('lpcd').value) || 0;
+                this.tankers = parseInt(document.getElementById('tankers').value) || 0;
+                this.capacity = parseInt(document.getElementById('capacity').value) || 0;
+                this.borewells = parseInt(document.getElementById('borewells').value) || 0;
+                this.scenario = document.getElementById('scenarioType').value;
+            },
 
-            map = L.map('map').setView([BASE_LAT, BASE_LNG], 12);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-
-            markersGroup = L.layerGroup().addTo(map);
-
-            // Add Legend
-            const legend = L.control({ position: 'bottomright' });
-            legend.onAdd = function (map) {
-                const div = L.DomUtil.create('div', 'legend');
-                div.innerHTML += "<h4>🗺️ Map Legend</h4>";
-                div.innerHTML += '<div><i>🚛</i> <b>Water Tanker</b> (Delivering Water)</div>';
-                div.innerHTML += '<div><i>🛢️</i> <b>Storage Tank</b> (Temporary Tank)</div>';
-                div.innerHTML += '<div><i>💧</i> <b>Borewell</b> (Groundwater Source)</div>';
-                div.innerHTML += '<div><i>💧</i> <b>Borewell</b> (Groundwater Source)</div>';
-                div.innerHTML += '<div><i style="background:blue; width:10px; height:10px; border-radius:50%; display:inline-block;"></i> <b>Zones (A-E)</b> (Affected Areas)</div>';
-                div.innerHTML += '<div><i style="background:red; width:18px; height:3px; display:inline-block;"></i> <b>Shortage Path</b> (Urgent Delivery)</div>';
-                div.innerHTML += '<div><span style="font-size:18px;">🏢</span> <b>Central Depot</b> (Water Source)</div>';
-                return div;
-            };
-            legend.addTo(map);
-        }
-
-        // Helper to get random coord within radius (approx meters)
-        function getRandomCoord(lat, lng, radiusInMeters) {
-            const r = radiusInMeters / 111300; // approx degrees
-            const u = Math.random();
-            const v = Math.random();
-            const w = r * Math.sqrt(u);
-            const t = 2 * Math.PI * v;
-            const x = w * Math.cos(t);
-            const y = w * Math.sin(t);
-
-            // Adjust x for longitude shrinking
-            const xAdjusted = x / Math.cos(lat * Math.PI / 180);
-
-            return {
-                lat: lat + y,
-                lng: lng + xAdjusted
-            };
-        }
-
-        function generatePlan() {
-            // 1. Get Inputs
-            const population = parseInt(document.getElementById('population').value);
-            const lpcd = parseInt(document.getElementById('lpcd').value);
-            const tankers = parseInt(document.getElementById('tankers').value);
-            const capacity = parseInt(document.getElementById('capacity').value);
-            const numBorewells = parseInt(document.getElementById('borewells').value);
-
-            // Validation
-            if (population <= 0 || lpcd <= 0 || tankers < 0 || capacity <= 0) {
-                alert("Please enter valid positive numbers for all fields.");
-                return;
+            isValid() {
+                return this.population > 0 && this.lpcd > 0 && this.tankers > 0;
             }
+        };
 
-            // Show Result Sections first to ensure map container has size
-            document.getElementById('statsSection').style.display = 'grid';
-            document.getElementById('detailsSection').style.display = 'grid';
-            document.getElementById('mapSection').style.display = 'block';
+        /**
+         * SIMULATION LOGIC
+         */
+        const Simulation = {
+            run() {
+                // 1. Calculate Baselines
+                const totalDemand = State.population * State.lpcd;
 
-            // Init map if needed
-            initMap();
-            // Clear existing markers
-            markersGroup.clearLayers();
-
-            // Need to invalidate size since map was hidden
-            setTimeout(() => { map.invalidateSize(); }, 100);
-
-            // 2. Calculations
-            const totalDemand = population * lpcd;
-            const tankerSupply = tankers * capacity;
-
-            let coverage = (tankerSupply / totalDemand) * 100;
-            let gap = totalDemand - tankerSupply;
-            if (gap < 0) gap = 0;
-
-            // 3. Storage Logic
-            let storageTanks = 0;
-            if (population > 100000) {
-                storageTanks = 5;
-            } else if (population >= 50000) {
-                storageTanks = 3;
-            } else {
-                storageTanks = 2;
-            }
-
-            // 4. Update Dashboard Stats
-            document.getElementById('dispDemand').innerText = totalDemand.toLocaleString() + " L";
-            document.getElementById('dispSupply').innerText = tankerSupply.toLocaleString() + " L";
-            document.getElementById('dispGap').innerText = gap.toLocaleString() + " L";
-            document.getElementById('dispCoverage').innerText = coverage.toFixed(1) + "%";
-            document.getElementById('dispStorage').innerText = storageTanks;
-
-            // Stats Colors
-            const cardCoverage = document.getElementById('cardCoverage');
-            if (coverage >= 100) {
-                cardCoverage.className = 'stat-card good';
-                document.getElementById('dispCoverage').style.color = 'var(--success-color)';
-            } else {
-                cardCoverage.className = 'stat-card bad';
-                document.getElementById('dispCoverage').style.color = 'var(--danger-color)';
-            }
-
-            // 5. Borewell Prioritization
-            const borewellData = [];
-
-            for (let i = 1; i <= numBorewells; i++) {
-                // Random yield
-                const yieldVal = Math.floor(Math.random() * (40000 - 10000 + 1)) + 10000;
-                borewellData.push({ id: `BW-${100 + i}`, yield: yieldVal });
-            }
-            borewellData.sort((a, b) => b.yield - a.yield);
-
-            // Render Borewell Table
-            const bwTable = document.getElementById('borewellTable');
-            bwTable.innerHTML = '';
-            borewellData.forEach((bw, index) => {
-                const row = `
-                    <tr>
-                        <td>#${index + 1}</td>
-                        <td>${bw.id}</td>
-                        <td>${bw.yield.toLocaleString()}</td>
-                        <td><span class="text-success">Active</span></td>
-                    </tr>
-                `;
-                bwTable.innerHTML += row;
-            });
-
-            // 6. Zone-based Tanker Routing & Map Visualization
-            const zones = [
-                { name: 'Zone A', lat: BASE_LAT + 0.02, lng: BASE_LNG - 0.02, color: 'red' },
-                { name: 'Zone B', lat: BASE_LAT + 0.02, lng: BASE_LNG + 0.02, color: 'blue' },
-                { name: 'Zone C', lat: BASE_LAT - 0.01, lng: BASE_LNG + 0.03, color: 'green' },
-                { name: 'Zone D', lat: BASE_LAT - 0.02, lng: BASE_LNG - 0.01, color: 'orange' },
-                { name: 'Zone E', lat: BASE_LAT, lng: BASE_LNG, color: 'purple' }
-            ];
-
-            const tankersPerZone = Math.floor(tankers / 5);
-            let extraTankers = tankers % 5;
-
-            const routeTable = document.getElementById('routeTable');
-            routeTable.innerHTML = '';
-
-            zones.forEach((zone, index) => {
-                // Add Zone Circle
-                L.circle([zone.lat, zone.lng], {
-                    color: zone.color,
-                    fillColor: zone.color,
-                    fillOpacity: 0.2,
-                    radius: 800
-                }).addTo(markersGroup).bindPopup(`<b>${zone.name}</b><br>Priority Area`);
-
-                // Distribute tankers
-                let assigned = tankersPerZone;
-                if (extraTankers > 0) {
-                    assigned++;
-                    extraTankers--;
+                // Simulate Borewell Yield (Random but realistic: 10k - 50k liters/day)
+                let totalBorewellYield = 0;
+                for (let i = 0; i < State.borewells; i++) {
+                    totalBorewellYield += Math.floor(Math.random() * 40000) + 10000;
                 }
 
-                const zoneSupply = assigned * capacity;
-                // Estimate Zone Demand (Simple: Total / 5)
-                const zoneDemand = totalDemand / 5;
-                const zoneGap = zoneDemand - zoneSupply;
-                const isShortage = zoneGap > 0;
+                // Tanker Supply
+                const totalTankerSupply = State.tankers * State.capacity;
+                const totalSupply = totalTankerSupply + totalBorewellYield;
 
-                // Add Central Depot Marker if not exists
-                if (index === 0) {
-                    L.marker([BASE_LAT, BASE_LNG], {
-                        icon: L.divIcon({
-                            className: 'emoji-marker',
-                            html: '🏢',
-                            iconSize: [30, 30]
-                        })
-                    }).addTo(markersGroup).bindPopup(`<b>Central Water Depot</b><br>Main Dispatch Center`);
-                }
+                // Stats
+                let gap = totalDemand - totalSupply;
+                if (gap < 0) gap = 0;
+                const coverage = (totalSupply / totalDemand) * 100;
 
-                // --- SMART ROUTING & ANIMATION ---
-                // We utilize Leaflet Routing Machine to calculate road path
-                const startPoint = L.latLng(BASE_LAT, BASE_LNG);
-                const endPoint = L.latLng(zone.lat, zone.lng);
+                State.stats = {
+                    totalDemand,
+                    totalTankerSupply,
+                    totalBorewellYield,
+                    totalSupply,
+                    gap,
+                    coverage
+                };
 
-                const routingControl = L.Routing.control({
-                    waypoints: [startPoint, endPoint],
-                    router: L.Routing.osrmv1({
-                        serviceUrl: 'https://router.project-osrm.org/route/v1'
-                    }),
-                    lineOptions: {
-                        styles: [{
-                            color: isShortage ? 'red' : '#007bff',
-                            opacity: 0.7,
-                            weight: isShortage ? 5 : 4,
-                            dashArray: isShortage ? '10, 10' : null
-                        }]
-                    },
-                    createMarker: function () { return null; }, // Don't create default markers
-                    addWaypoints: false,
-                    fitSelectedRoutes: false,
-                    show: false
-                }).addTo(map);
+                // 2. Generate Zones with varied needs
+                State.zones = this.generateZones(5); // Create 5 active zones
 
-                // Extract path for animation when route is found
-                routingControl.on('routesfound', function (e) {
-                    const routes = e.routes;
-                    const summary = routes[0].summary; // needed for time?
-                    const coordinates = routes[0].coordinates;
+                // Distribute resources logic (Simple heuristic)
+                this.distributeResources();
+            },
 
-                    // Create Moving Tanker Marker
-                    const tankerMarker = L.marker(startPoint, {
-                        icon: L.divIcon({
-                            className: 'emoji-marker emoji-marker-tanker',
-                            html: '🚛',
-                            iconSize: [30, 30]
-                        })
-                    }).addTo(markersGroup).bindPopup(`<b>Moving Tanker</b><br>Dest: ${zone.name}`);
+            generateZones(count) {
+                const zones = [];
+                const zoneNames = ['North Sector', 'South Sector', 'East Industrial', 'West Residential', 'Central Hub'];
 
-                    // ANIMATION FUNCTION
-                    let i = 0;
-                    function animateTanker() {
-                        if (i < coordinates.length) {
-                            tankerMarker.setLatLng([coordinates[i].lat, coordinates[i].lng]);
-                            i++;
-                            // Adjust speed by timeout (lower = faster)
-                            setTimeout(animateTanker, 50);
-                        }
+                // Distribute population somewhat randomly
+                let remainingPop = State.population;
+
+                for (let i = 0; i < count; i++) {
+                    // Coordinates around base
+                    const angle = (i / count) * Math.PI * 2;
+                    const radius = 0.03; // ~3-4km
+                    const lat = CONFIG.baseLat + radius * Math.cos(angle);
+                    const lng = CONFIG.baseLng + radius * Math.sin(angle);
+
+                    // Pop logic
+                    let zonePop = Math.floor(remainingPop / (count - i));
+                    // Add some variance
+                    if (i < count - 1) {
+                        const variance = Math.floor(zonePop * 0.4); // +/- 40%
+                        zonePop += Math.floor(Math.random() * variance * 2) - variance;
                     }
-                    // Start animation with random delay to look natural
-                    setTimeout(animateTanker, Math.random() * 2000);
+                    remainingPop -= zonePop;
+
+                    zones.push({
+                        id: i + 1,
+                        name: zoneNames[i],
+                        lat: lat,
+                        lng: lng,
+                        population: zonePop,
+                        demand: zonePop * State.lpcd,
+                        allocatedTankers: 0,
+                        supplied: 0,
+                        deficit: 0
+                    });
+                }
+                return zones;
+            },
+
+            distributeResources() {
+                let availableTankers = State.tankers;
+                // Sort zones by demand (highest first) to prioritize
+                // In a real app, we might prioritize by criticality (e.g., hospitals)
+                const sortedZones = [...State.zones].sort((a, b) => b.demand - a.demand);
+
+                // Distribute evenly first, then remainder
+                const baseAlloc = Math.floor(availableTankers / State.zones.length);
+                let remainder = availableTankers % State.zones.length;
+
+                State.zones.forEach(z => {
+                    let alloc = baseAlloc;
+                    if (remainder > 0) {
+                        alloc++;
+                        remainder--;
+                    }
+                    z.allocatedTankers = alloc;
+
+                    // Assume borewells are somewhat distributed, adding base supply
+                    const localBorewell = (State.stats.totalBorewellYield / State.zones.length);
+
+                    z.supplied = (alloc * State.capacity) + localBorewell;
+                    z.deficit = z.demand - z.supplied;
+                    if (z.deficit < 0) z.deficit = 0;
+
+                    z.status = z.deficit === 0 ? 'Optimal' : (z.deficit / z.demand < 0.3 ? 'Stressed' : 'Critical');
+                });
+            }
+        };
+
+        /**
+         * MAP CONTROLLER (Leaflet)
+         */
+        /**
+         * MAP CONTROLLER (Leaflet)
+         */
+        const MapController = {
+            map: null,
+            layerGroup: null,
+
+            init() {
+                if (this.map) return; // Already initialized
+
+                this.map = L.map('map').setView([CONFIG.baseLat, CONFIG.baseLng], 12);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(this.map);
+
+                this.layerGroup = L.layerGroup().addTo(this.map);
+
+                this.addLegend();
+            },
+
+            addLegend() {
+                const legend = L.control({ position: 'bottomright' });
+                legend.onAdd = function (map) {
+                    const div = L.DomUtil.create('div', 'legend');
+                    div.innerHTML = `
+                        <strong>Simulation Map Legend</strong><br>
+                        <i style="background:var(--primary); border-radius:50%"></i> Central Depot<br>
+                        <i style="background:var(--danger); border-radius:50%"></i> Critical Zone<br>
+                        <i style="background:var(--warning); border-radius:50%"></i> Stressed Zone<br>
+                        <i style="background:var(--success); border-radius:50%"></i> Optimal Zone<br>
+                        <i style="border-bottom: 2px dashed red"></i> Pending Delivery
+                    `;
+                    return div;
+                };
+                legend.addTo(this.map);
+            },
+
+            render() {
+                this.layerGroup.clearLayers();
+
+                // Add Central Depot
+                const depotIcon = L.divIcon({
+                    className: 'custom-icon',
+                    html: `<div style="font-size:30px">🏢</div>`,
+                    iconSize: [30, 30]
                 });
 
-                // Add Storage Tank Markers (just approximate distribution)
-                if (index < storageTanks) {
-                    const pos = getRandomCoord(zone.lat, zone.lng, 400);
-                    L.marker([pos.lat, pos.lng], {
-                        icon: L.divIcon({
-                            className: 'emoji-marker emoji-marker-storage',
-                            html: '🛢️',
-                            iconSize: [24, 24]
-                        })
-                    }).addTo(markersGroup).bindPopup(`<b>Storage Tank</b><br>Capacity: 20,000L`);
+                L.marker([CONFIG.baseLat, CONFIG.baseLng], { icon: depotIcon })
+                    .bindPopup('<b>Central Water Depot</b><br>Supply Hub')
+                    .addTo(this.layerGroup);
+
+                // Add Zones
+                State.zones.forEach(z => {
+                    let color = 'green';
+                    if (z.status === 'Critical') color = 'red';
+                    if (z.status === 'Stressed') color = 'orange';
+
+                    // Zone Circle
+                    L.circle([z.lat, z.lng], {
+                        color: color,
+                        fillColor: color,
+                        fillOpacity: 0.3,
+                        radius: 800
+                    }).addTo(this.layerGroup)
+                        .bindPopup(`<b>${z.name}</b><br>Pop: ${z.population.toLocaleString()}<br>Deficit: ${Math.round(z.deficit).toLocaleString()} L`);
+
+                    // Routing Visualization
+                    if (z.allocatedTankers > 0) {
+                        this.drawRoute(z, color);
+                    }
+                });
+
+                // Force resize fix
+                setTimeout(() => this.map.invalidateSize(), 100);
+            },
+
+            drawRoute(zone, color) {
+                const start = L.latLng(CONFIG.baseLat, CONFIG.baseLng);
+                const end = L.latLng(zone.lat, zone.lng);
+
+                // Try OSRM Routing
+                const routeControl = L.Routing.control({
+                    waypoints: [start, end],
+                    router: L.Routing.osrmv1({
+                        serviceUrl: 'https://router.project-osrm.org/route/v1',
+                        timeout: 5000 // 5s timeout
+                    }),
+                    lineOptions: {
+                        styles: [{ color: color, opacity: 0.6, weight: 4, dashArray: '10,10' }]
+                    },
+                    createMarker: () => null,
+                    addWaypoints: false,
+                    show: false,
+                    fitSelectedRoutes: false
+                }).addTo(this.map);
+
+                // Success Handler
+                routeControl.on('routesfound', (e) => {
+                    const route = e.routes[0];
+                    const coords = route.coordinates;
+                    const durationSeconds = route.summary.totalTime;
+                    const durationMins = Math.round(durationSeconds / 60);
+
+                    this.animateTanker(coords, durationMins, zone.name);
+                });
+
+                // Error Handler (Fallback to straight line)
+                routeControl.on('routingerror', () => {
+                    // console.warn("Routing API failed. Using direct path fallback.");
+                    this.drawFallbackRoute(start, end, color, zone.name);
+                });
+            },
+
+            drawFallbackRoute(start, end, color, zoneName) {
+                // Draw dotted line
+                L.polyline([start, end], {
+                    color: color,
+                    opacity: 0.6,
+                    weight: 4,
+                    dashArray: '10,10'
+                }).addTo(this.layerGroup);
+
+                // Generate points for animation
+                const points = [];
+                const steps = 100;
+                for (let i = 0; i <= steps; i++) {
+                    points.push(L.latLng(
+                        start.lat + (end.lat - start.lat) * (i / steps),
+                        start.lng + (end.lng - start.lng) * (i / steps)
+                    ));
                 }
-            });
+                this.animateTanker(points, "N/A (Direct)", zoneName);
+            },
 
-            // Add Borewell Markers (Distributed globally/randomly across zones)
-            borewellData.forEach((bw, idx) => {
-                // Pick a random zone to place it near
-                const targetZone = zones[idx % zones.length];
-                const pos = getRandomCoord(targetZone.lat, targetZone.lng, 700);
+            animateTanker(coords, eta, zoneName) {
+                const icon = L.divIcon({
+                    html: '<div style="font-size:24px">🚛</div>',
+                    className: 'tanker-anim',
+                    iconSize: [24, 24]
+                });
 
-                L.marker([pos.lat, pos.lng], {
-                    icon: L.divIcon({
-                        className: 'emoji-marker',
-                        html: '💧',
-                        iconSize: [24, 24]
-                    })
-                }).addTo(markersGroup).bindPopup(`<b>${bw.id}</b><br>Yield: ${bw.yield} L`);
-            });
+                const marker = L.marker(coords[0], { icon })
+                    .addTo(this.layerGroup)
+                    .bindPopup(`<b>Water Tanker</b><br>Dest: ${zoneName}<br>ETA: ${eta} mins`)
+                    .openPopup();
 
-            // Scroll to results
-            document.getElementById('statsSection').scrollIntoView({ behavior: 'smooth' });
-        }
+                let i = 0;
+                function move() {
+                    if (i < coords.length) {
+                        marker.setLatLng(coords[i]);
+                        // Update ETA real-time simulation if we wanted, but static is fine for now
+                        i++;
+                        setTimeout(() => requestAnimationFrame(move), 50); // 50ms delay for slower movement
+                    }
+                }
+                move();
+            }
+        };
+
+        /**
+         * AI MANAGER (Groq API)
+         */
+        const AIManager = {
+            async analyze() {
+                const ui = document.getElementById('aiOutput');
+                ui.innerHTML = `
+                    <div class="ai-loading">
+                        <div class="spinner"></div> 
+                        Generating strategic analysis plan...
+                    </div>`;
+
+                const prompt = this.constructPrompt();
+
+                try {
+                    const response = await fetch(CONFIG.groqApiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${CONFIG.groqApiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: "llama-3.3-70b-versatile",
+                            messages: [
+                                {
+                                    role: "system",
+                                    content: "You are an expert logistician and emergency response coordinator. Analyze the water supply simulation data and provide a concise, professional report. Use bolding for key metrics. Focus on actionable insights."
+                                },
+                                {
+                                    role: "user",
+                                    content: prompt
+                                }
+                            ],
+                            temperature: 0.7,
+                            max_tokens: 600
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        const errorMsg = data.error?.message || data.message || "Unknown API Error";
+                        throw new Error(`API Error ${response.status}: ${errorMsg}`);
+                    }
+
+                    if (data.choices && data.choices.length > 0) {
+                        const text = data.choices[0].message.content;
+                        // Simple markdown formatting to HTML
+                        const formatted = text
+                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            .replace(/### (.*?)\n/g, '<h3>$1</h3>')
+                            .replace(/- (.*?)\n/g, '<li>$1</li>');
+
+                        ui.innerHTML = formatted;
+                    } else {
+                        throw new Error("No response content from AI");
+                    }
+
+                } catch (err) {
+                    console.error("Full AI Error:", err);
+                    ui.innerHTML = `<div style="color:var(--danger)">⚠️ AI Status: ${err.message}</div>`;
+                }
+            },
+
+            constructPrompt() {
+                const s = State.stats;
+                let criticalZones = State.zones.filter(z => z.status === 'Critical').map(z => z.name).join(', ');
+                if (!criticalZones) criticalZones = "None";
+
+                return `
+                    Scenario: ${State.scenario}
+                    Total Population: ${State.population}
+                    Daily Demand: ${s.totalDemand} Liters
+                    Current Supply: ${s.totalSupply} Liters
+                    Gap: ${s.gap} Liters
+                    Coverage: ${s.coverage.toFixed(1)}%
+                    Tankers Deployed: ${State.tankers}
+                    Critical Zones: ${criticalZones}
+
+                    Please provide:
+                    1. Executive Summary of the situation.
+                    2. Strategic Recommendations to close the gap.
+                    3. Specific advice for the critical zones.
+                `;
+            }
+        };
+
+        /**
+         * UI MANAGER
+         */
+        const UIManager = {
+            init() {
+                document.getElementById('generateBtn').addEventListener('click', () => {
+                    this.handleRun();
+                });
+            },
+
+            handleRun() {
+                State.updateFromDOM();
+
+                if (!State.isValid()) {
+                    alert("Please enter valid positive numbers for population, lpcd, and tankers.");
+                    return;
+                }
+
+                // Show UI sections
+                document.getElementById('statsSection').style.display = 'flex';
+                document.getElementById('mainResults').style.display = 'grid';
+                document.getElementById('detailsSection').style.display = 'block';
+
+                // Run Sim
+                Simulation.run();
+
+                // Update Stats
+                this.updateStats();
+
+                // Update Table
+                this.updateTable();
+
+                // Init & Render Map
+                MapController.init();
+                MapController.render();
+
+                // Run AI
+                AIManager.analyze();
+            },
+
+            updateStats() {
+                const s = State.stats;
+                const fmt = (n) => Math.round(n).toLocaleString() + ' L';
+
+                document.getElementById('dispDemand').textContent = fmt(s.totalDemand);
+                document.getElementById('dispSupply').textContent = fmt(s.totalSupply);
+                document.getElementById('dispGap').textContent = fmt(s.gap);
+                document.getElementById('dispBorewell').textContent = fmt(s.totalBorewellYield);
+
+                const covEl = document.getElementById('dispCoverage');
+                covEl.textContent = s.coverage.toFixed(1) + '%';
+
+                // Color coding
+                const cardGap = document.getElementById('cardGap');
+                const cardCov = document.getElementById('cardCoverage');
+
+                if (s.coverage >= 100) {
+                    cardCov.parentElement.className = 'stat-card success';
+                    cardGap.parentElement.className = 'stat-card success';
+                } else if (s.coverage > 70) {
+                    cardCov.parentElement.className = 'stat-card'; // neutral/blue
+                } else {
+                    cardCov.parentElement.className = 'stat-card danger';
+                }
+            },
+
+            updateTable() {
+                const tbody = document.getElementById('zoneTable');
+                tbody.innerHTML = '';
+
+                State.zones.forEach(z => {
+                    let badgeClass = 'badge-success';
+                    if (z.status === 'Critical') badgeClass = 'badge-danger';
+                    if (z.status === 'Stressed') badgeClass = 'badge-warning';
+
+                    const row = `
+                        <tr>
+                            <td>${z.name}</td>
+                            <td><span class="badge ${badgeClass}">${z.status}</span></td>
+                            <td>${z.population.toLocaleString()}</td>
+                            <td>${z.demand.toLocaleString()}</td>
+                            <td>${z.allocatedTankers}</td>
+                            <td>${z.supplied.toLocaleString()}</td>
+                            <td style="color:${z.deficit > 0 ? 'var(--danger)' : 'var(--text-muted)'}">${Math.floor(z.deficit).toLocaleString()}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            }
+        };
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            UIManager.init();
+        });
+
     </script>
 </body>
 

@@ -1,0 +1,8 @@
+# Sensitive config
+config.js
+.env
+
+# System files
+node_modules/
+.DS_Store
+Thumbs.db
