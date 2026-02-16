@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Generated Emergency Water Supply Planning</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            /* Darker blue for professional feel */
+            --secondary-color: #007bff;
+            /* Standard blue */
+            --accent-color: #00bcd4;
+            /* Cyan/Teal for water-related accents */
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --text-muted: #6c757d;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 60px;
+            /* Space for footer */
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(to right, #ffffff, #e3f2fd);
+            padding: 2rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: grid;
+            gap: 2rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #555;
+        }
+
+        input,
+        select {
+            padding: 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            /* Full width on mobile, adjust via grid */
+            margin-top: 1.5rem;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #004494;
+        }
+
+        /* Dashboard Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            border-left: 5px solid var(--secondary-color);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-color);
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card.good {
+            border-left-color: var(--success-color);
+        }
+
+        .stat-card.bad {
+            border-left-color: var(--danger-color);
+        }
+
+        /* Tables & Lists */
+        .results-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .results-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        th,
+        td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Visual Map - UPDATED FOR LEAFLET */
+        #map {
+            height: 500px;
+            width: 100%;
+            border-radius: var(--border-radius);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            border-top: 1px solid #dee2e6;
+            margin-top: 3rem;
+            background-color: #fff;
+        }
+
+        /* Status Colors */
+        .text-success {
+            color: var(--success-color);
+        }
+
+        .text-danger {
+            color: var(--danger-color);
+        }
+
+        /* Custom Marker Icons */
+        .emoji-marker {
+            font-size: 24px;
+            text-align: center;
+            line-height: 24px;
+        }
+
+        .emoji-marker-tanker {
+            text-shadow: 0 0 3px #fff;
+        }
+
+        .emoji-marker-storage {
+            text-shadow: 0 0 3px #fff;
+        }
+
+        /* Map Legend */
+        .legend {
+            background: white;
+            padding: 10px;
+            line-height: 18px;
+            color: #555;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            font-size: 14px;
+        }
+
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.7;
+            text-align: center;
+            font-style: normal;
+        }
+
+        /* Guide Section */
+        .guide-section {
+            background-color: #e9ecef;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .guide-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .guide-section p,
+        .guide-section li {
+            color: #495057;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .guide-section ul {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+    </style>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Leaflet Polyline Decorator -->
+    <script src="https://unpkg.com/leaflet-polyline-decorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
+    <!-- Leaflet Routing Machine -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <style>
+        /* Hide Routing Control Panel */
+        .leaflet-routing-container {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>AI-Driven Emergency Water Supply Simulator</h1>
+        <p>Simulation-based generative planning model for emergency water distribution during drought and contamination
+            events.</p>
+    </header>
+
+    <div class="container">
+
+        <!-- NEW: "EASY TERMS" GUIDE SECTION -->
+        <section class="guide-section">
+            <h3>📖 How to Use This Tool (Simple Guide)</h3>
+            <p>This tool helps plan water delivery during emergencies. Here is how it works:</p>
+            <ul>
+                <li><strong>Step 1:</strong> Enter the <b>Population</b> (number of people affected).</li>
+                <li><strong>Step 2:</strong> Set <b>LPCD</b> (Liters Per Person Per Day) - amount of water one person
+                    needs.</li>
+                <li><strong>Step 3:</strong> Enter available <b>Tankers</b> (Water Trucks) and <b>Borewells</b> (Wells).
+                </li>
+                <li><strong>Step 4:</strong> Click <b>"Generate AI Emergency Plan"</b>.</li>
+            </ul>
+            <p style="margin-top: 10px;">The results will show if there is a water shortage (<b>Gap</b>), the
+                <b>Coverage</b> %, and a <b>Map</b> showing where trucks (🚛) and tanks (🛢️) should go.
+            </p>
+        </section>
+
+        <!-- SECTION 1: SCENARIO INPUT -->
+        <section class="card">
+            <div class="card-header">
+                <span>⚙️ Scenario Configuration</span>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="scenarioType">Scenario Type</label>
+                    <select id="scenarioType">
+                        <option value="drought">Severe Drought</option>
+                        <option value="contamination">Water Contamination</option>
+                        <option value="pipeline">Pipeline Failure</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="population">Affected Population</label>
+                    <input type="number" id="population" value="80000" min="1000">
+                </div>
+                <div class="form-group">
+                    <label for="lpcd">Emergency LPCD (Liters/Person/Day)</label>
+                    <input type="number" id="lpcd" value="50" min="10">
+                </div>
+                <div class="form-group">
+                    <label for="tankers">Total Tankers Available</label>
+                    <input type="number" id="tankers" value="10" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="capacity">Tanker Capacity (L)</label>
+                    <input type="number" id="capacity" value="10000" min="1000">
+                </div>
+                <div class="form-group">
+                    <label for="borewells">Number of Borewells</label>
+                    <input type="number" id="borewells" value="5" min="0">
+                </div>
+            </div>
+            <button class="btn-primary" onclick="generatePlan()">Generate AI Emergency Plan</button>
+        </section>
+
+        <!-- SECTION 3: OUTPUT DASHBOARD -->
+        <section class="stats-grid" id="statsSection" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-label">Total Demand</div>
+                <div class="stat-value" id="dispDemand">0 L</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Supply</div>
+                <div class="stat-value" id="dispSupply">0 L</div>
+            </div>
+            <div class="stat-card" id="cardGap">
+                <div class="stat-label">Demand Gap</div>
+                <div class="stat-value" id="dispGap">0 L</div>
+            </div>
+            <div class="stat-card" id="cardCoverage">
+                <div class="stat-label">Coverage</div>
+                <div class="stat-value" id="dispCoverage">0%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Required Storage Tanks</div>
+                <div class="stat-value" id="dispStorage">0</div>
+            </div>
+        </section>
+
+        <!-- SECTION 2/4: SIMULATION LOGIC OUTPUTS -->
+        <div class="results-section" id="detailsSection" style="display: none;">
+            <!-- Borewell Priority -->
+            <section class="card">
+                <div class="card-header">
+                    <span>💧 Borewell Yield & Priority</span>
+                    <button class="btn-primary"
+                        style="margin-left:auto; width:auto; margin-top:0; padding: 0.5rem 1rem; font-size: 0.9rem;"
+                        onclick="generatePlan()">Re-Run</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Borewell ID</th>
+                            <th>Yield (L)</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="borewellTable">
+                        <!-- Rows injected by JS -->
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Tanker Routes -->
+            <section class="card">
+                <div class="card-header">
+                    <span>🚛 Optimized Tanker Routes</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Zone</th>
+                            <th>Tankers Assigned</th>
+                            <th>Supply (L)</th>
+                            <th>Est. Delivery</th>
+                        </tr>
+                    </thead>
+                    <tbody id="routeTable">
+                        <!-- Rows injected by JS -->
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- SECTION 4: VISUAL MAP -->
+        <section class="card" id="mapSection" style="display: none;">
+            <div class="card-header">
+                <span>🗺️ Visual Distribution Map (OpenStreetMap)</span>
+            </div>
+            <!-- Leaflet Map Container -->
+            <div id="map"></div>
+        </section>
+
+    </div>
+
+    <!-- SECTION 5: FOOTER -->
+    <footer>
+        <p>Based on CPHEEO Manual, IS 1172 and IS 10500 Guidelines.</p>
+        <p>Educational Simulation Model Example.</p>
+    </footer>
+
+    <!-- SECTION 2: SIMULATION LOGIC (JavaScript) -->
+    <script>
+        let map;
+        let markersGroup;
+
+        // Base coordinates (e.g., Generic City Center)
+        const BASE_LAT = 12.9716;
+        const BASE_LNG = 77.5946;
+
+        function initMap() {
+            if (map) return;
+
+            map = L.map('map').setView([BASE_LAT, BASE_LNG], 12);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            markersGroup = L.layerGroup().addTo(map);
+
+            // Add Legend
+            const legend = L.control({ position: 'bottomright' });
+            legend.onAdd = function (map) {
+                const div = L.DomUtil.create('div', 'legend');
+                div.innerHTML += "<h4>🗺️ Map Legend</h4>";
+                div.innerHTML += '<div><i>🚛</i> <b>Water Tanker</b> (Delivering Water)</div>';
+                div.innerHTML += '<div><i>🛢️</i> <b>Storage Tank</b> (Temporary Tank)</div>';
+                div.innerHTML += '<div><i>💧</i> <b>Borewell</b> (Groundwater Source)</div>';
+                div.innerHTML += '<div><i>💧</i> <b>Borewell</b> (Groundwater Source)</div>';
+                div.innerHTML += '<div><i style="background:blue; width:10px; height:10px; border-radius:50%; display:inline-block;"></i> <b>Zones (A-E)</b> (Affected Areas)</div>';
+                div.innerHTML += '<div><i style="background:red; width:18px; height:3px; display:inline-block;"></i> <b>Shortage Path</b> (Urgent Delivery)</div>';
+                div.innerHTML += '<div><span style="font-size:18px;">🏢</span> <b>Central Depot</b> (Water Source)</div>';
+                return div;
+            };
+            legend.addTo(map);
+        }
+
+        // Helper to get random coord within radius (approx meters)
+        function getRandomCoord(lat, lng, radiusInMeters) {
+            const r = radiusInMeters / 111300; // approx degrees
+            const u = Math.random();
+            const v = Math.random();
+            const w = r * Math.sqrt(u);
+            const t = 2 * Math.PI * v;
+            const x = w * Math.cos(t);
+            const y = w * Math.sin(t);
+
+            // Adjust x for longitude shrinking
+            const xAdjusted = x / Math.cos(lat * Math.PI / 180);
+
+            return {
+                lat: lat + y,
+                lng: lng + xAdjusted
+            };
+        }
+
+        function generatePlan() {
+            // 1. Get Inputs
+            const population = parseInt(document.getElementById('population').value);
+            const lpcd = parseInt(document.getElementById('lpcd').value);
+            const tankers = parseInt(document.getElementById('tankers').value);
+            const capacity = parseInt(document.getElementById('capacity').value);
+            const numBorewells = parseInt(document.getElementById('borewells').value);
+
+            // Validation
+            if (population <= 0 || lpcd <= 0 || tankers < 0 || capacity <= 0) {
+                alert("Please enter valid positive numbers for all fields.");
+                return;
+            }
+
+            // Show Result Sections first to ensure map container has size
+            document.getElementById('statsSection').style.display = 'grid';
+            document.getElementById('detailsSection').style.display = 'grid';
+            document.getElementById('mapSection').style.display = 'block';
+
+            // Init map if needed
+            initMap();
+            // Clear existing markers
+            markersGroup.clearLayers();
+
+            // Need to invalidate size since map was hidden
+            setTimeout(() => { map.invalidateSize(); }, 100);
+
+            // 2. Calculations
+            const totalDemand = population * lpcd;
+            const tankerSupply = tankers * capacity;
+
+            let coverage = (tankerSupply / totalDemand) * 100;
+            let gap = totalDemand - tankerSupply;
+            if (gap < 0) gap = 0;
+
+            // 3. Storage Logic
+            let storageTanks = 0;
+            if (population > 100000) {
+                storageTanks = 5;
+            } else if (population >= 50000) {
+                storageTanks = 3;
+            } else {
+                storageTanks = 2;
+            }
+
+            // 4. Update Dashboard Stats
+            document.getElementById('dispDemand').innerText = totalDemand.toLocaleString() + " L";
+            document.getElementById('dispSupply').innerText = tankerSupply.toLocaleString() + " L";
+            document.getElementById('dispGap').innerText = gap.toLocaleString() + " L";
+            document.getElementById('dispCoverage').innerText = coverage.toFixed(1) + "%";
+            document.getElementById('dispStorage').innerText = storageTanks;
+
+            // Stats Colors
+            const cardCoverage = document.getElementById('cardCoverage');
+            if (coverage >= 100) {
+                cardCoverage.className = 'stat-card good';
+                document.getElementById('dispCoverage').style.color = 'var(--success-color)';
+            } else {
+                cardCoverage.className = 'stat-card bad';
+                document.getElementById('dispCoverage').style.color = 'var(--danger-color)';
+            }
+
+            // 5. Borewell Prioritization
+            const borewellData = [];
+
+            for (let i = 1; i <= numBorewells; i++) {
+                // Random yield
+                const yieldVal = Math.floor(Math.random() * (40000 - 10000 + 1)) + 10000;
+                borewellData.push({ id: `BW-${100 + i}`, yield: yieldVal });
+            }
+            borewellData.sort((a, b) => b.yield - a.yield);
+
+            // Render Borewell Table
+            const bwTable = document.getElementById('borewellTable');
+            bwTable.innerHTML = '';
+            borewellData.forEach((bw, index) => {
+                const row = `
+                    <tr>
+                        <td>#${index + 1}</td>
+                        <td>${bw.id}</td>
+                        <td>${bw.yield.toLocaleString()}</td>
+                        <td><span class="text-success">Active</span></td>
+                    </tr>
+                `;
+                bwTable.innerHTML += row;
+            });
+
+            // 6. Zone-based Tanker Routing & Map Visualization
+            const zones = [
+                { name: 'Zone A', lat: BASE_LAT + 0.02, lng: BASE_LNG - 0.02, color: 'red' },
+                { name: 'Zone B', lat: BASE_LAT + 0.02, lng: BASE_LNG + 0.02, color: 'blue' },
+                { name: 'Zone C', lat: BASE_LAT - 0.01, lng: BASE_LNG + 0.03, color: 'green' },
+                { name: 'Zone D', lat: BASE_LAT - 0.02, lng: BASE_LNG - 0.01, color: 'orange' },
+                { name: 'Zone E', lat: BASE_LAT, lng: BASE_LNG, color: 'purple' }
+            ];
+
+            const tankersPerZone = Math.floor(tankers / 5);
+            let extraTankers = tankers % 5;
+
+            const routeTable = document.getElementById('routeTable');
+            routeTable.innerHTML = '';
+
+            zones.forEach((zone, index) => {
+                // Add Zone Circle
+                L.circle([zone.lat, zone.lng], {
+                    color: zone.color,
+                    fillColor: zone.color,
+                    fillOpacity: 0.2,
+                    radius: 800
+                }).addTo(markersGroup).bindPopup(`<b>${zone.name}</b><br>Priority Area`);
+
+                // Distribute tankers
+                let assigned = tankersPerZone;
+                if (extraTankers > 0) {
+                    assigned++;
+                    extraTankers--;
+                }
+
+                const zoneSupply = assigned * capacity;
+                // Estimate Zone Demand (Simple: Total / 5)
+                const zoneDemand = totalDemand / 5;
+                const zoneGap = zoneDemand - zoneSupply;
+                const isShortage = zoneGap > 0;
+
+                // Add Central Depot Marker if not exists
+                if (index === 0) {
+                    L.marker([BASE_LAT, BASE_LNG], {
+                        icon: L.divIcon({
+                            className: 'emoji-marker',
+                            html: '🏢',
+                            iconSize: [30, 30]
+                        })
+                    }).addTo(markersGroup).bindPopup(`<b>Central Water Depot</b><br>Main Dispatch Center`);
+                }
+
+                // --- SMART ROUTING & ANIMATION ---
+                // We utilize Leaflet Routing Machine to calculate road path
+                const startPoint = L.latLng(BASE_LAT, BASE_LNG);
+                const endPoint = L.latLng(zone.lat, zone.lng);
+
+                const routingControl = L.Routing.control({
+                    waypoints: [startPoint, endPoint],
+                    router: L.Routing.osrmv1({
+                        serviceUrl: 'https://router.project-osrm.org/route/v1'
+                    }),
+                    lineOptions: {
+                        styles: [{
+                            color: isShortage ? 'red' : '#007bff',
+                            opacity: 0.7,
+                            weight: isShortage ? 5 : 4,
+                            dashArray: isShortage ? '10, 10' : null
+                        }]
+                    },
+                    createMarker: function () { return null; }, // Don't create default markers
+                    addWaypoints: false,
+                    fitSelectedRoutes: false,
+                    show: false
+                }).addTo(map);
+
+                // Extract path for animation when route is found
+                routingControl.on('routesfound', function (e) {
+                    const routes = e.routes;
+                    const summary = routes[0].summary; // needed for time?
+                    const coordinates = routes[0].coordinates;
+
+                    // Create Moving Tanker Marker
+                    const tankerMarker = L.marker(startPoint, {
+                        icon: L.divIcon({
+                            className: 'emoji-marker emoji-marker-tanker',
+                            html: '🚛',
+                            iconSize: [30, 30]
+                        })
+                    }).addTo(markersGroup).bindPopup(`<b>Moving Tanker</b><br>Dest: ${zone.name}`);
+
+                    // ANIMATION FUNCTION
+                    let i = 0;
+                    function animateTanker() {
+                        if (i < coordinates.length) {
+                            tankerMarker.setLatLng([coordinates[i].lat, coordinates[i].lng]);
+                            i++;
+                            // Adjust speed by timeout (lower = faster)
+                            setTimeout(animateTanker, 50);
+                        }
+                    }
+                    // Start animation with random delay to look natural
+                    setTimeout(animateTanker, Math.random() * 2000);
+                });
+
+                // Add Storage Tank Markers (just approximate distribution)
+                if (index < storageTanks) {
+                    const pos = getRandomCoord(zone.lat, zone.lng, 400);
+                    L.marker([pos.lat, pos.lng], {
+                        icon: L.divIcon({
+                            className: 'emoji-marker emoji-marker-storage',
+                            html: '🛢️',
+                            iconSize: [24, 24]
+                        })
+                    }).addTo(markersGroup).bindPopup(`<b>Storage Tank</b><br>Capacity: 20,000L`);
+                }
+            });
+
+            // Add Borewell Markers (Distributed globally/randomly across zones)
+            borewellData.forEach((bw, idx) => {
+                // Pick a random zone to place it near
+                const targetZone = zones[idx % zones.length];
+                const pos = getRandomCoord(targetZone.lat, targetZone.lng, 700);
+
+                L.marker([pos.lat, pos.lng], {
+                    icon: L.divIcon({
+                        className: 'emoji-marker',
+                        html: '💧',
+                        iconSize: [24, 24]
+                    })
+                }).addTo(markersGroup).bindPopup(`<b>${bw.id}</b><br>Yield: ${bw.yield} L`);
+            });
+
+            // Scroll to results
+            document.getElementById('statsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+
+</html>
