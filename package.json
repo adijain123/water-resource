@@ -1,0 +1,11 @@
+{
+    "name": "water-resource-simulation",
+    "version": "1.0.0",
+    "description": "AI-Driven Water Supply Planner",
+    "scripts": {
+        "build": "mkdir -p public && cp index.html public/ && echo \"const CONFIG = { baseLat: 12.9716, baseLng: 77.5946, groqApiKey: '${GROQ_API_KEY}', groqApiUrl: 'https://api.groq.com/openai/v1/chat/completions' };\" > public/config.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "MIT"
+}
